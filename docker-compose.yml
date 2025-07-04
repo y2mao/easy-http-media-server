@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  http-media-server:
+    build: .
+    container_name: http-media-server
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      # Mount your media directory here
+      - ./media:/app/media:ro
+      # Mount custom config if needed
+      - ./config.yaml:/app/config.yaml:ro
+    environment:
+      - TZ=Asia/Shanghai
+    networks:
+      - media-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.media-server.rule=Host(`media.example.com`)"
+      - "traefik.http.routers.media-server.entrypoints=websecure"
+      - "traefik.http.routers.media-server.tls.certresolver=letsencrypt"
+      - "traefik.http.services.media-server.loadbalancer.server.port=8080"
+
+networks:
+  media-network:
+    driver: bridge
+
+# Example with external media volume
+# Uncomment and modify as needed
+# volumes:
+#   media-data:
+#     external: true

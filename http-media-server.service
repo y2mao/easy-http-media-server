@@ -1,0 +1,35 @@
+[Unit]
+Description=HTTP Media Server v2
+Documentation=https://github.com/user/http-media-svr-v2
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=media-server
+Group=media-server
+WorkingDirectory=/opt/http-media-server
+ExecStart=/opt/http-media-server/http-media-server -config /opt/http-media-server/config.yaml
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=20
+KillMode=mixed
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/opt/http-media-server/media
+
+# Resource limits
+LimitNOFILE=65536
+MemoryHigh=512M
+MemoryMax=1G
+
+# Environment
+Environment=GOMAXPROCS=2
+
+[Install]
+WantedBy=multi-user.target
